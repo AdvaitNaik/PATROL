@@ -1,3 +1,5 @@
+patrol.log
+
 # Byte-complied / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -9,3 +11,4 @@ __pypackages__/
 .env
 
 venv/
+
