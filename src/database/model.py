@@ -11,7 +11,6 @@ class User(db.Model):
     first_name = db.Column(db.String(100), nullable=False)
     last_name = db.Column(db.String(100), nullable=False)
     phone_number = db.Column(db.String(10))
-    country_code = db.Column(db.String(5))
     email = db.Column(db.String(100), nullable=False)
     address = db.Column(db.String(100))
     city = db.Column(db.String(100))
@@ -20,7 +19,10 @@ class User(db.Model):
     zip_code = db.Column(db.String(10))
     latitude = db.Column(db.Float)
     longitude = db.Column(db.Float)
+    role_id = db.Column(db.Integer, db.ForeignKey('user_roles.role_id'))
 
+    # Relationships
+    role = relationship("UserRole", backref="user", lazy=True)
     messages = relationship("BroadcastMessage", backref="user", lazy='dynamic')
     locations = relationship("LocationHistory", backref="user", lazy='dynamic')
     infection_records = relationship("InfectionHistory", backref="user", lazy='dynamic')
