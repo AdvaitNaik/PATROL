@@ -22,6 +22,7 @@ def add_users(num_users):
     users = []
     for _ in range(num_users):
         lat, lng = generate_nearby_coords(LA_LAT, LA_LNG)
+        roles = random.choice([1, 2, 3, 4])
         user = User(
             username=fake.user_name(),
             first_name=fake.first_name(),
@@ -35,13 +36,15 @@ def add_users(num_users):
             country='USA',
             zip_code=fake.zipcode_in_state(state_abbr='CA'),
             latitude=lat,
-            longitude=lng
+            longitude=lng,
+            role_id=roles
         )
         db.session.add(user)
         users.append(user)
     db.session.commit()  # Commit at the end of the function
     return users
 
+if __name__ == '__main__':
 # Generate data
-num_users = 1000  # Number of users to generate
-add_users(num_users)
+    num_users = 1000  # Number of users to generate
+    add_users(num_users)
