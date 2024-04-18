@@ -8,5 +8,5 @@ __pypackages__/
 # Environments
 .env
 
+my_env/
 venv/
-
