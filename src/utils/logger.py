@@ -5,16 +5,14 @@ from pathlib import Path
 
 FILE_PATH = Path(__file__)
 SOURCE_PATH = FILE_PATH.parent.parent
-ROOT_PATH = SOURCE_PATH.parent
 STATIC_PATH = os.path.join(SOURCE_PATH, "static")
 LOG_CONFIG_PATH = os.path.join(STATIC_PATH, "log_config.ini")
-LOG_FILE_PATH = os.path.join(ROOT_PATH, "tmp", "patrol.log")
 
 logging.config.fileConfig(LOG_CONFIG_PATH)
  
 # create logger
 class Logger:
-    def __init__(self, name, filename="/tmp/patrol.log", level="INFO") -> None:
+    def __init__(self, name, filename="patrol.log", level="INFO") -> None:
         self.name = name
         self.filename = filename
         self.level = level
