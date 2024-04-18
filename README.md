@@ -6,6 +6,13 @@ This is the backend server of PATROL created using Python, Flask, Firebase
 poetry export -f requirements.txt --output requirements.txt --without-hashes
 ```
 
+## Python Environment
+```bash
+-- python -m venv venv
+-- venv\Scripts\activate
+-- pip install -r requirements.txt
+```
+
 
 ## Poetry 
 - Dependency management tool
