@@ -9,5 +9,3 @@ __pypackages__/
 .env
 
 venv/
-
-*.log
