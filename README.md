@@ -11,6 +11,7 @@ poetry export -f requirements.txt --output requirements.txt --without-hashes
 -- python -m venv venv
 -- venv\Scripts\activate
 -- pip install -r requirements.txt
+-- python main.py
 ```
 
 
