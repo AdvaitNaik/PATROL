@@ -12,7 +12,7 @@ logging.config.fileConfig(LOG_CONFIG_PATH)
  
 # create logger
 class Logger:
-    def __init__(self, name, filename="/tmp/patrol.log", level="INFO") -> None:
+    def __init__(self, name, filename="patrol.log", level="INFO") -> None:
         self.name = name
         self.filename = filename
         self.level = level

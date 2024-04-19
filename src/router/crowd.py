@@ -1,16 +1,19 @@
-from flask import Blueprint, Response, jsonify, abort
+from flask import Blueprint, Response, jsonify, abort, request
 from src.database.model import LocationHistory, InfectionHistory
-# from src.database.db import db
+from geoalchemy2.functions import ST_DWithin, ST_Point
+from datetime import datetime, timedelta
 
 crowd_bp = Blueprint('crowd', __name__)
 
-@crowd_bp.get('/')
+# ------------------------------ /crowd/healthCheck ------------------------------ #
+@crowd_bp.get('/healthCheck')
 def index():  
     response = Response("Crowd Monitoring Endpoint")
     response.status_code = 200
     return response
 
-# ------------------------------get_location_history------------------------------
+
+# ------------------------------ /crowd/location_history/<int:user_id> ------------------------------ #
 @crowd_bp.get('/location_history/<int:user_id>')
 def get_location_history(user_id):
     locations = LocationHistory.query.filter_by(user_id=user_id).all()
@@ -31,7 +34,7 @@ def get_location_history(user_id):
     return jsonify(location_list), 200
 
 
-# ------------------------------get_infection_history------------------------------
+# ------------------------------ /crowd/infection_history ------------------------------ #
 @crowd_bp.get('/infection_history')
 def get_infection_history():
     infections = InfectionHistory.query.all()
