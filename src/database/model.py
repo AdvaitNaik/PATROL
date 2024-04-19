@@ -1,5 +1,4 @@
 # models to map python classes to database tables
-
 from src.database.db import db
 from sqlalchemy.orm import relationship
 
@@ -7,38 +6,26 @@ class User(db.Model):
     __tablename__ = 'users'
 
     user_id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(100), nullable=False)
     first_name = db.Column(db.String(100), nullable=False)
     last_name = db.Column(db.String(100), nullable=False)
-    phone_number = db.Column(db.String(10))
     email = db.Column(db.String(100), nullable=False)
-    address = db.Column(db.String(100))
-    city = db.Column(db.String(100))
-    state = db.Column(db.String(100))
-    country = db.Column(db.String(100))
-    zip_code = db.Column(db.String(10))
-    latitude = db.Column(db.Float)
-    longitude = db.Column(db.Float)
-    role_id = db.Column(db.Integer, db.ForeignKey('user_roles.role_id'))
+    uuid = db.Column(db.String(100), nullable=False)
+    uuid_hash = db.Column(db.String(100), nullable=False)
+    role_name = db.Column(db.String(100), nullable=False)
 
     # Relationships
-    role = relationship("UserRole", backref="user", lazy=True)
     messages = relationship("BroadcastMessage", backref="user", lazy='dynamic')
     locations = relationship("LocationHistory", backref="user", lazy='dynamic')
+    vaccination_records = relationship("VaccinationHistory", backref="user", lazy='dynamic')
     infection_records = relationship("InfectionHistory", backref="user", lazy='dynamic')
-
-
-class UserRole(db.Model):
-    __tablename__ = 'user_roles'
-
-    role_id = db.Column(db.Integer, primary_key=True)
-    role_name = db.Column(db.String(50), nullable=False)
+    survey_demands = relationship("SkuDemandSurvey", backref="user", lazy='dynamic')
 
 
 class BroadcastMessage(db.Model):
     __tablename__ = 'broadcast_messages'
 
     message_id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(100), nullable=False)
     message = db.Column(db.String(100), nullable=False)
     timestamp = db.Column(db.DateTime, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)
@@ -52,7 +39,15 @@ class LocationHistory(db.Model):
     latitude = db.Column(db.Float, nullable=False)
     longitude = db.Column(db.Float, nullable=False)
     reverse_geo_code_address = db.Column(db.String(100))
-    
+
+
+class VaccinationHistory(db.Model):
+    __tablename__ = 'vaccination_history'
+
+    vaccination_id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)
+    vaccination_date = db.Column(db.Date)
+
 
 class InfectionHistory(db.Model):
     __tablename__ = 'infection_history'
@@ -62,3 +57,15 @@ class InfectionHistory(db.Model):
     infected = db.Column(db.Boolean, nullable=False)
     symptoms = db.Column(db.String(100))
     timestamp = db.Column(db.DateTime, nullable=False)
+
+
+class SkuDemandSurvey(db.Model):
+    __tablename__ = 'sku_demand_survey'
+
+    demand_id = db.Column(db.Integer, primary_key=True)
+    survey_id = db.Column(db.Integer, nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)
+    city = db.Column(db.String(100), nullable=False)
+    ranking = db.Column(db.Integer)
+    quantity = db.Column(db.Integer)
+
