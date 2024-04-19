@@ -9,7 +9,7 @@ user_bp = Blueprint('user', __name__)
 
 
 # ------------------------------ Util Methods ------------------------------ #
-def uuid_hash(uuid: str):
+def create_uuid_hash(uuid: str):
     sha1 = hashlib.sha1()
     sha1.update(uuid.encode('utf-8'))
     hashed_uuid = sha1.hexdigest()
@@ -65,7 +65,7 @@ def user_create():
         last_name=last_name,
         email=email,
         uuid=user_uuid,
-        uuid_hash=uuid_hash(str(user_uuid)),
+        uuid_hash=create_uuid_hash(str(user_uuid)),
         role_name=role_name
     )
 
