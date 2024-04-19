@@ -4,7 +4,8 @@ CREATE TABLE IF NOT EXISTS users (
     last_name VARCHAR(100) NOT NULL,
     email VARCHAR(100) NOT NULL,
     uuid VARCHAR(100) NOT NULL,
-    uuid_hash VARCHAR(100) NOT NULL
+    uuid_hash VARCHAR(100) NOT NULL,
+    role_name VARCHAR(100) NOT NULL,
 );
 
 CREATE TABLE IF NOT EXISTS broadcast_messages (

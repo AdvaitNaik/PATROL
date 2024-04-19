@@ -20,8 +20,5 @@ def send_notifications():
     else:
         response = Response(responseMessage)
         response.status_code = 200
-
-    # response.headers.add("Access-Control-Allow-Origin", "*")
-    # response.headers.add('Access-Control-Allow-Headers', "*")
-    # response.headers.add('Access-Control-Allow-Methods', "*")
+        
     return response
