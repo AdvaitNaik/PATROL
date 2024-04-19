@@ -1,31 +1,17 @@
 CREATE TABLE IF NOT EXISTS users (
     user_id SERIAL PRIMARY KEY,
-    username VARCHAR(100) NOT NULL,
     first_name VARCHAR(100) NOT NULL,
     last_name VARCHAR(100) NOT NULL,
-    phone_number VARCHAR(10),
-    country_code VARCHAR(5),
     email VARCHAR(100) NOT NULL,
-    address VARCHAR(100),
-    city VARCHAR(100),
-    state VARCHAR(100),
-    country VARCHAR(100),
-    zip_code VARCHAR(10),
-    latitude FLOAT,
-    longitude FLOAT
-);
-
-CREATE TABLE IF NOT EXISTS user_roles (
-    role_id SERIAL PRIMARY KEY,
-    role_name VARCHAR(50) NOT NULL
+    uuid VARCHAR(100) NOT NULL,
+    uuid_hash VARCHAR(100) NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS broadcast_messages (
     message_id SERIAL PRIMARY KEY,
+    title VARCHAR(100) NOT NULL,
     message VARCHAR(100) NOT NULL,
-    timestamp TIMESTAMP NOT NULL,
-    user_id INT NOT NULL,
-    FOREIGN KEY (user_id) REFERENCES users(user_id)
+    timestamp TIMESTAMP NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS location_history (
@@ -34,6 +20,13 @@ CREATE TABLE IF NOT EXISTS location_history (
     latitude FLOAT NOT NULL,
     longitude FLOAT NOT NULL,
     reverse_geo_code_address VARCHAR(100),
+    FOREIGN KEY (user_id) REFERENCES users(user_id)
+);
+
+CREATE TABLE IF NOT EXISTS vaccination_history (
+    vaccination_id SERIAL PRIMARY KEY,
+    user_id INT NOT NULL,
+    vaccination_date DATE,
     FOREIGN KEY (user_id) REFERENCES users(user_id)
 );
 
@@ -46,58 +39,12 @@ CREATE TABLE IF NOT EXISTS infection_history (
     FOREIGN KEY (user_id) REFERENCES users(user_id)
 );
 
-
-
--------------------------------DATA-------------------------------
-location_history
-
-INSERT INTO location_history (user_id, latitude, longitude, reverse_geo_code_address) VALUES
-(1, 34.1478, -118.1445, '123 Maple St., Pasadena, CA, USA'),
-(2, 34.1425, -118.2551, '456 Elm St., Glendale, CA, USA'),
-(3, 34.0195, -118.4912, '789 Oak St., Santa Monica, CA, USA'),
-(4, 34.1808, -118.3090, '321 Pine St., Burbank, CA, USA'),
-(5, 34.0736, -118.4004, '25 Cherry Ln., Beverly Hills, CA, USA'),
-(6, 33.9850, -118.4695, '85 Cedar Rd., Venice, CA, USA'),
-(7, 33.7701, -118.1937, '182 Birch Ave., Long Beach, CA, USA'),
-(8, 34.0901, -118.3617, '473 Spruce Dr., West Hollywood, CA, USA'),
-(9, 34.0211, -118.3965, '654 Walnut St., Culver City, CA, USA'),
-(10, 34.0259, -118.7798, '321 Sycamore Ln., Malibu, CA, USA');
-
-
-infection_history
-
-INSERT INTO infection_history (user_id, infected, symptoms, timestamp) VALUES
-(1, TRUE, 'Cough, fever', '2024-03-15 09:00:00'),
-(2, FALSE, 'Sore throat', '2024-03-16 09:30:00'),
-(3, TRUE, 'Cough', '2024-03-17 10:15:00'),
-(4, FALSE, 'Fatigue', '2024-03-18 10:45:00'),
-(5, TRUE, 'Fever, sore throat', '2024-03-19 11:00:00');
-
-
-broadcast_messages
-
-INSERT INTO broadcast_messages (message, timestamp, user_id) VALUES
-('Lockdown to be imposed again..', '2024-04-12 10:00:00', 1),
-('Security alert: Please be cautious in California region. Increasing cases', '2024-04-12 16:00:00', 4);
-
-
-user_roles
-
-INSERT INTO user_roles (role_name) VALUES
-('Public'),
-('Government');
-
-
-users
-
-INSERT INTO users (username, first_name, last_name, phone_number, country_code, email, address, city, state, country, zip_code, latitude, longitude) VALUES
-('roshnee21', 'Roshnee', 'Matlani', '1234567890', 'US', 'roshneematlani21@gmail.com', '123 Maple St.', 'Pasadena', 'CA', 'USA', '91101', 34.1478, -118.1445),
-('naika', 'Advait', 'Naik', '9876543210', 'US', 'naika@usc.edu', '456 Elm St.', 'Glendale', 'CA', 'USA', '91205', 34.1425, -118.2551),
-('cverma', 'Chahita', 'Verma', '5551234567', 'US', 'cverma@usc.edu', '789 Oak St.', 'Santa Monica', 'CA', 'USA', '90401', 34.0195, -118.4912),
-('nilmohan', 'Nil', 'Mohanty', '3216549870', 'US', 'nmohanty@usc.edu', '321 Pine St.', 'Burbank', 'CA', 'USA', '91502', 34.1808, -118.3090),
-('trinonandi', 'Trino', 'Nandi', '2589631470', 'US', 'trino@gmail.com', '25 Cherry Ln.', 'Beverly Hills', 'CA', 'USA', '90210', 34.0736, -118.4004),
-('lucasgrey', 'Lucas', 'Grey', '7539514862', 'US', 'lgrey@gmail.com', '85 Cedar Rd.', 'Venice', 'CA', 'USA', '90291', 33.9850, -118.4695),
-('emmawatson', 'Emma', 'Watson', '8527419630', 'US', 'ewatson@gmail.com', '182 Birch Ave.', 'Long Beach', 'CA', 'USA', '90802', 33.7701, -118.1937),
-('nathanbyrd', 'Nathan', 'Byrd', '9513574682', 'US', 'nbyrd@yahoo.com', '473 Spruce Dr.', 'West Hollywood', 'CA', 'USA', '90069', 34.0901, -118.3617),
-('sophialewis', 'Sophia', 'Lewis', '1597534862', 'US', 'slewis@gmail.com', '654 Walnut St.', 'Culver City', 'CA', 'USA', '90232', 34.0211, -118.3965),
-('charliemiller', 'Charlie', 'Miller', '9876543212', 'US', 'cmiller@gmail.com', '321 Sycamore Ln.', 'Malibu', 'CA', 'USA', '90265', 34.0259, -118.7798);
+CREATE TABLE IF NOT EXISTS sku_demand_survey (
+    demand_id SERIAL PRIMARY KEY,
+    survey_id INT NOT NULL,
+    user_id INT NOT NULL,
+    city VARCHAR(100) NOT NULL,
+    ranking INT,
+    quantity INT,
+    FOREIGN KEY (user_id) REFERENCES users(user_id)
+);
