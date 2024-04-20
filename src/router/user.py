@@ -30,7 +30,7 @@ def index():
 
 
 # ------------------------------ /user/<int:user_id> ------------------------------ #
-@user_bp.get('/info')
+@user_bp.post('/info')
 def user():
     body = request.get_json()
     user_email = body.get("user_email")
@@ -86,7 +86,7 @@ def user_create():
 def populate_sku_demand():
     body = request.get_json()
     email = body.get("user_email")
-    items = body.get("list")
+    items = body.get("items")
     city = body.get("city")
     survery_id = body.get("survery_id")
 
