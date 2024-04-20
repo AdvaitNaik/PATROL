@@ -1,5 +1,5 @@
 from flask import Blueprint, Response, request, jsonify
-from src.firebase import create_user as firebase_create_user
+from src.utils.firebase import check_email_authorization, create_user as firebase_create_user
 from src.database.model import User
 from src.database.db import db
 import uuid
@@ -29,6 +29,10 @@ def index():
 def user():
     body = request.get_json()
     user_email = body.get("user_email")
+
+    if not check_email_authorization(user_email, request.authorization.token):
+        return jsonify({'message': 'Unauthorized Request'}), 403
+
     user = User.query.filter_by(email=user_email).first()
     if not user:
         return jsonify({'message': 'User not found'}), 404
@@ -41,6 +45,7 @@ def user():
         "uuid_hash": user.uuid_hash,
         "role_name": user.role_name
     }
+
     return jsonify(user_data), 200
 
 
@@ -51,11 +56,12 @@ def user_create():
     email = body.get("email")
     password = body.get("password")
     role_name = body.get("role_name")
-    first_name=body.get("first_name"),
-    last_name=body.get("last_name")
+    first_name = body.get("first_name"),
+    last_name = body.get("last_name")
+    print(role_name)
 
     try:
-        user_create_status = firebase_create_user(email=email, password=password, fullname=f"{first_name} {last_name}",role_name=role_name)
+        user_create_status = firebase_create_user(email=email, password=password, fullname=f"{first_name} {last_name}", role_name=role_name)
     except Exception as e:
         return jsonify({"Error": str(e)}), 400
 
@@ -73,7 +79,7 @@ def user_create():
         db.session.add(new_user)
         db.session.commit()
 
-    return jsonify({"message": "User created successfully", "user_uuid": new_user.uuid}), 201
+    return jsonify({"message": "User created successfully", "user_uuid": body}), 201
 
 
 
