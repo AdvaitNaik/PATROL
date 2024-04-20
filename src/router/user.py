@@ -58,7 +58,7 @@ def user():
 @user_bp.post('/create')
 def user_create():
     body = request.get_json()
-    email = body.get("email")
+    email = body.get("user_email")
     password = body.get("password")
     role_name = body.get("role_name")
     first_name = body.get("first_name"),
