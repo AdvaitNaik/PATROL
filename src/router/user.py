@@ -63,7 +63,6 @@ def user_create():
     role_name = body.get("role_name")
     first_name = body.get("first_name"),
     last_name = body.get("last_name")
-    print(role_name)
 
     try:
         user_create_status = firebase_create_user(email=email, password=password, fullname=f"{first_name} {last_name}", role_name=role_name)

@@ -48,7 +48,7 @@ def check_email_authorization(email, id_token) -> bool:
 def check_role_authorization(role, id_token) -> bool:
     try:
         decode_token = auth.verify_id_token(id_token)
-        print(role, decode_token)
+        logger.info(role, decode_token)
         return decode_token.get(role) is not None and decode_token.get(role)
     except Exception as e:
         logger.error(e)
@@ -101,7 +101,6 @@ def send_notification(title: str, body: str, topic: str):
 
     try:
         response = messaging.send(message)
-        print(response)
         logger.info("Notification sent successfully:", response)
         return 'Notification sent!', None
     except Exception as e:
