@@ -45,8 +45,8 @@ def index():
 @research_bp.get('/infection_history')
 def infection_records():
 
-    # if not check_role_authorization(Roles.RES.name, request.authorization.token):
-    #     return jsonify({'message': 'Unauthorized Request'}), 403
+    if not check_role_authorization(Roles.RES.name, request.authorization.token):
+        return jsonify({'message': 'Unauthorized Request'}), 403
 
     results = [
         {
