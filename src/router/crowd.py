@@ -34,7 +34,7 @@ def index():
 
 
 @crowd_bp.post('/map/monitor')
-def crowd_monitor():
+def crowd_monitor_map():
 
     data = request.get_json()
     latitude = float(data['latitude'])
@@ -62,6 +62,60 @@ def crowd_monitor():
         "isInfected": bool(InfectionHistory.query.filter(
             InfectionHistory.user_id == location.user_id, 
             InfectionHistory.infected == True).first())
+    } for location in nearby_locations]
+
+    return jsonify({
+        "totalNumberOfPeople": total_number_of_people,
+        "totalInfected": total_infected,
+        "locations": locations
+    }), 200
+
+
+@crowd_bp.post('/trend/monitor')
+def crowd_monitor_trend():
+    data = request.get_json()
+    latitude = float(data['latitude'])
+    longitude = float(data['longitude'])
+    days = int(data.get('days', 0))
+
+    radius_km = 1.609  # 1 mile in kilometers
+
+    if days < 0:
+        start_time = datetime.utcnow() + timedelta(days=days)
+        end_time = datetime.utcnow()
+    else:
+        start_time = datetime.utcnow()
+        end_time = start_time 
+
+    nearby_locations = []
+    all_locations = LocationHistory.query.filter(
+        LocationHistory.timestamp >= start_time,
+        LocationHistory.timestamp <= end_time
+    ).all()
+
+    for location in all_locations:
+        if haversine(longitude, latitude, location.longitude, location.latitude) <= radius_km:
+            nearby_locations.append(location)
+
+    unique_user_ids = {location.user_id for location in nearby_locations}
+    total_number_of_people = len(unique_user_ids)
+
+    total_infected = InfectionHistory.query.filter(
+        InfectionHistory.user_id.in_(unique_user_ids),
+        InfectionHistory.infected == True,
+        InfectionHistory.timestamp >= start_time,
+        InfectionHistory.timestamp <= end_time
+    ).count()
+
+    locations = [{
+        "latitude": location.latitude,
+        "longitude": location.longitude,
+        "isInfected": bool(InfectionHistory.query.filter(
+            InfectionHistory.user_id == location.user_id,
+            InfectionHistory.infected == True,
+            InfectionHistory.timestamp >= start_time,
+            InfectionHistory.timestamp <= end_time
+        ).first())
     } for location in nearby_locations]
 
     return jsonify({
