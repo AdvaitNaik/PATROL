@@ -107,21 +107,9 @@ def crowd_monitor_trend():
         InfectionHistory.timestamp <= end_time
     ).count()
 
-    locations = [{
-        "latitude": location.latitude,
-        "longitude": location.longitude,
-        "isInfected": bool(InfectionHistory.query.filter(
-            InfectionHistory.user_id == location.user_id,
-            InfectionHistory.infected == True,
-            InfectionHistory.timestamp >= start_time,
-            InfectionHistory.timestamp <= end_time
-        ).first())
-    } for location in nearby_locations]
-
     return jsonify({
         "totalNumberOfPeople": total_number_of_people,
-        "totalInfected": total_infected,
-        "locations": locations
+        "totalInfected": total_infected
     }), 200
 
 
