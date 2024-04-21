@@ -40,7 +40,7 @@ def crowd_monitor_map():
     latitude = float(data['latitude'])
     longitude = float(data['longitude'])
 
-    radius_km = 1.609  # 1 mile in kilometers
+    radius_km = 16.09  # 10 mile in kilometers
 
     nearby_locations = []
     all_locations = LocationHistory.query.all()
@@ -78,7 +78,7 @@ def crowd_monitor_trend():
     longitude = float(data['longitude'])
     days = int(data.get('days', 0))
 
-    radius_km = 1.609  # 1 mile in kilometers
+    radius_km = 16.09  # 10 mile in kilometers
 
     if days < 0:
         start_time = datetime.utcnow() + timedelta(days=days)
