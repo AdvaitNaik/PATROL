@@ -1,5 +1,5 @@
 from flask import Blueprint, Response, request, jsonify
-from src.database.model import SkuDemandSurvey, VaccinationHistory, InfectionHistory
+from src.database.model import SkuDemandSurvey, VaccinationHistory, InfectionHistory, User
 from src.utils.firebase import check_role_authorization, Roles
 from src.database.db import db
 from sqlalchemy import func, distinct
@@ -44,15 +44,28 @@ def index():
 # ------------------------------ /research/infection_history ------------------------------ #
 @research_bp.get('/infection_history')
 def infection_records():
-    infected_count = fetch_infection_record()
 
-    if not check_role_authorization(Roles.RES.name, request.authorization.token):
-        return jsonify({'message': 'Unauthorized Request'}), 403
+    # if not check_role_authorization(Roles.RES.name, request.authorization.token):
+    #     return jsonify({'message': 'Unauthorized Request'}), 403
 
-    return jsonify({
-        "Total Infected": infected_count
-    }), 200
+    results = [
+        {
+            "History ID": record.history_id,
+            "User UUID": record.uuid,
+            "Infected": record.infected,
+            "Symptoms": record.symptoms,
+            "Timestamp": record.timestamp.isoformat() if record.timestamp else None 
+        }
+        for record in db.session.query(
+            InfectionHistory.history_id,
+            User.uuid,
+            InfectionHistory.infected,
+            InfectionHistory.symptoms,
+            InfectionHistory.timestamp
+        ).join(User, InfectionHistory.user_id == User.user_id).filter(InfectionHistory.infected == True).all()
+    ]
 
+    return jsonify(results), 200
 
 # ------------------------------ /research/vaccination_history ------------------------------ #
 @research_bp.get('/vaccination_history')
