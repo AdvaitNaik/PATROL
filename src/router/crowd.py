@@ -1,9 +1,29 @@
 from flask import Blueprint, Response, jsonify, abort, request
 from src.database.model import LocationHistory, InfectionHistory
-from geoalchemy2.functions import ST_DWithin, ST_Point
+from geoalchemy2 import Geography
+from geoalchemy2.functions import ST_DWithin, ST_SetSRID, ST_GeomFromText
 from datetime import datetime, timedelta
+from math import radians, cos, sin, asin, sqrt
 
 crowd_bp = Blueprint('crowd', __name__)
+
+
+# ------------------------------ Util Methods ------------------------------ #
+def haversine(lon1, lat1, lon2, lat2):
+    """
+    Calculate the great circle distance in kilometers between two points 
+    on the earth (specified in decimal degrees)
+    """
+    lon1, lat1, lon2, lat2 = map(radians, [lon1, lat1, lon2, lat2])
+
+    # haversine formula 
+    dlon = lon2 - lon1 
+    dlat = lat2 - lat1 
+    a = sin(dlat/2)**2 + cos(lat1) * cos(lat2) * sin(dlon/2)**2
+    c = 2 * asin(sqrt(a)) 
+    r = 6371  
+    return c * r
+
 
 # ------------------------------ /crowd/healthCheck ------------------------------ #
 @crowd_bp.get('/healthCheck')
@@ -13,6 +33,45 @@ def index():
     return response
 
 
+@crowd_bp.post('/map/monitor')
+def crowd_monitor():
+
+    data = request.get_json()
+    latitude = float(data['latitude'])
+    longitude = float(data['longitude'])
+
+    radius_km = 1.609  # 1 mile in kilometers
+
+    nearby_locations = []
+    all_locations = LocationHistory.query.all()
+    for location in all_locations:
+        if haversine(longitude, latitude, location.longitude, location.latitude) <= radius_km:
+            nearby_locations.append(location)
+
+    unique_user_ids = {location.user_id for location in nearby_locations}
+    total_number_of_people = len(unique_user_ids)
+
+    total_infected = InfectionHistory.query.filter(
+        InfectionHistory.user_id.in_(unique_user_ids),
+        InfectionHistory.infected == True
+    ).count()
+
+    locations = [{
+        "latitude": location.latitude,
+        "longitude": location.longitude,
+        "isInfected": bool(InfectionHistory.query.filter(
+            InfectionHistory.user_id == location.user_id, 
+            InfectionHistory.infected == True).first())
+    } for location in nearby_locations]
+
+    return jsonify({
+        "totalNumberOfPeople": total_number_of_people,
+        "totalInfected": total_infected,
+        "locations": locations
+    }), 200
+
+
+# ------------------------------ HIDDEN ENDPOINT ------------------------------ #
 # ------------------------------ /crowd/location_history/<int:user_id> ------------------------------ #
 @crowd_bp.get('/location_history/<int:user_id>')
 def get_location_history(user_id):

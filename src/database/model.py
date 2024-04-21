@@ -14,7 +14,6 @@ class User(db.Model):
     role_name = db.Column(db.String(100), nullable=False)
 
     # Relationships
-    messages = relationship("BroadcastMessage", backref="user", lazy='dynamic')
     locations = relationship("LocationHistory", backref="user", lazy='dynamic')
     vaccination_records = relationship("VaccinationHistory", backref="user", lazy='dynamic')
     infection_records = relationship("InfectionHistory", backref="user", lazy='dynamic')
@@ -28,7 +27,6 @@ class BroadcastMessage(db.Model):
     title = db.Column(db.String(100), nullable=False)
     message = db.Column(db.String(100), nullable=False)
     timestamp = db.Column(db.DateTime, nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)
 
 
 class LocationHistory(db.Model):
@@ -69,4 +67,5 @@ class SkuDemandSurvey(db.Model):
     sku_name = db.Column(db.String(100), nullable=False)
     ranking = db.Column(db.Integer)
     quantity = db.Column(db.Integer)
+    timestamp = db.Column(db.DateTime, nullable=False)
 

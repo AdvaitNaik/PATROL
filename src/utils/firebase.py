@@ -108,6 +108,8 @@ def send_notification(title: str, body: str, topic: str):
         logger.error(error_message)
         return None, "Failed to send notification"
 
+
+
 # create_user("trino.nandi@gmail.com", "Trinanjan@00", "Trinanjan")
 # send_notification("Trinanjan", "Hey it's me broadcasting to all devices registered", "broadcast")
 # send_notification("Trinanjan", "Exposure notification!!!", "exposure")

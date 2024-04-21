@@ -94,6 +94,10 @@ def populate_sku_demand():
     items = body.get("items")
     city = body.get("city")
     survery_id = body.get("survery_id")
+    timestamp = body.get("timestamp")
+
+    if not check_email_authorization(email, request.authorization.token):
+        return jsonify({'message': 'Unauthorized Request'}), 403
 
     user_id = get_user_id_by_email(email)
     if not user_id:
@@ -106,7 +110,8 @@ def populate_sku_demand():
             city=city.lower(),
             sku_name=item.lower(),
             ranking=index,
-            quantity=1 
+            quantity=1,
+            timestamp = datetime.fromisoformat(timestamp)
         )
         db.session.add(demand)
 
@@ -114,7 +119,7 @@ def populate_sku_demand():
     return jsonify({"message": "SKU demand added successfully"}), 201
 
 
-# ------------------------------ /user/request_items ------------------------------ #
+# ------------------------------ /user/populate_location ------------------------------ #
 @user_bp.post('/populate_location')
 def populate_location_history():
     body = request.get_json()
