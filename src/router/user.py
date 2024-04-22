@@ -93,9 +93,9 @@ def populate_sku_demand():
     email = body.get("user_email")
     items = body.get("items")
     city = body.get("city")
-    quantity = body.get('quantity')
     timestamp = body.get("timestamp")
-
+    # print(body)
+    # print(items)
     if not check_email_authorization(email, request.authorization.token):
         return jsonify({'message': 'Unauthorized Request'}), 403
 
@@ -103,18 +103,21 @@ def populate_sku_demand():
     user_id = get_user_id_by_email(email)
     if not user_id:
         return jsonify({'message': 'User not found'}), 404
-
-    for index, item in enumerate(items, start=1):
+    print("All checks done")
+    for item in items:
+        #print("Adding "+item);
+        item_name = item['itemName']
+        quantity = item['quantity']
         demand = SkuDemandSurvey(
             user_id=user_id,
             survey_id=survey_id,
             city=city.lower(),
-            sku_name=item.lower(),
-            ranking=index,
+            sku_name=item_name.lower(),
             quantity=quantity,
-            timestamp = datetime.fromisoformat(timestamp)
+            timestamp=datetime.fromisoformat(timestamp)
         )
         db.session.add(demand)
+        #print("Added "+item);
 
     db.session.commit()
     return jsonify({"message": "Saved Successfully"}), 201
@@ -124,11 +127,12 @@ def populate_sku_demand():
 @user_bp.post('/populate_location')
 def populate_location_history():
     body = request.get_json()
-    email = body.get("user_email")
+    email = body.get("email")
     latitude = body.get("latitude")
     longitude = body.get("longitude")
     timestamp = body.get("timestamp")
-
+    # print("/populate_location body")
+    # print(body)
     if not check_email_authorization(email, request.authorization.token):
         return jsonify({'message': 'Unauthorized Request'}), 403
 
