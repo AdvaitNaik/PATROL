@@ -65,7 +65,6 @@ class SkuDemandSurvey(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)
     city = db.Column(db.String(100), nullable=False)
     sku_name = db.Column(db.String(100), nullable=False)
-    ranking = db.Column(db.Integer)
     quantity = db.Column(db.Integer)
     timestamp = db.Column(db.DateTime, nullable=False)
 
