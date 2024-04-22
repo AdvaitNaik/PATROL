@@ -1,7 +1,8 @@
 from flask import Blueprint, Response, jsonify, abort, request
 from src.database.model import LocationHistory, InfectionHistory
 from sqlalchemy.orm import joinedload
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
+from src.utils.ml import regression_model
 from math import radians, cos, sin, asin, sqrt
 
 crowd_bp = Blueprint('crowd', __name__)
@@ -82,6 +83,12 @@ def crowd_monitor_trend():
     if days < 0:
         start_time = today + timedelta(days=days-1)
         end_time = today - timedelta(days=1)
+    elif days > 0:
+        predicted_visits, predicted_infections = regression_model(latitude, longitude, days)
+        return jsonify({
+            "totalNumberOfPeople": int(predicted_visits),
+            "totalInfected": int(predicted_infections)
+        }), 200
     else:
         start_time = today - timedelta(days=2)
         end_time = today - timedelta(days=1)
