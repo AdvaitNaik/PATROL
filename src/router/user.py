@@ -58,7 +58,7 @@ def user():
 @user_bp.post('/create')
 def user_create():
     body = request.get_json()
-    email = body.get("user_email")
+    email = body.get("email")
     password = body.get("password")
     role_name = body.get("role_name")
     first_name = body.get("first_name"),
@@ -93,12 +93,13 @@ def populate_sku_demand():
     email = body.get("user_email")
     items = body.get("items")
     city = body.get("city")
+    quantity = body.get('quantity')
     timestamp = body.get("timestamp")
 
     if not check_email_authorization(email, request.authorization.token):
         return jsonify({'message': 'Unauthorized Request'}), 403
 
-    survery_id = uuid.uuid4()
+    survey_id = uuid.uuid4()
     user_id = get_user_id_by_email(email)
     if not user_id:
         return jsonify({'message': 'User not found'}), 404
@@ -106,17 +107,17 @@ def populate_sku_demand():
     for index, item in enumerate(items, start=1):
         demand = SkuDemandSurvey(
             user_id=user_id,
-            survey_id=survery_id,  
+            survey_id=survey_id,
             city=city.lower(),
             sku_name=item.lower(),
             ranking=index,
-            quantity=1,
+            quantity=quantity,
             timestamp = datetime.fromisoformat(timestamp)
         )
         db.session.add(demand)
 
     db.session.commit()
-    return jsonify({"message": "SKU demand added successfully"}), 201
+    return jsonify({"message": "Saved Successfully"}), 201
 
 
 # ------------------------------ /user/populate_location ------------------------------ #
