@@ -61,7 +61,7 @@ class SkuDemandSurvey(db.Model):
     __tablename__ = 'sku_demand_survey'
 
     demand_id = db.Column(db.Integer, primary_key=True)
-    survey_id = db.Column(db.Integer, nullable=False)
+    survey_id = db.Column(db.String(100), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)
     city = db.Column(db.String(100), nullable=False)
     sku_name = db.Column(db.String(100), nullable=False)

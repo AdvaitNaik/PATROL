@@ -21,7 +21,7 @@ def fetch_demand(city, start_date, end_date):
         SkuDemandSurvey.timestamp <= end_date
     ).group_by(SkuDemandSurvey.sku_name).all()
 
-    return {result.sku_name: result.total_quantity for result in results}
+    return {result.sku_name.title(): result.total_quantity for result in results}
 
 # ------------------------------ /ecommerce/healthCheck ------------------------------ #
 @ecommerce_bp.get('/healthCheck')
