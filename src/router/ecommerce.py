@@ -34,14 +34,15 @@ def index():
 @ecommerce_bp.get('/demand/<city>')
 def get_city_demand(city):
     today = datetime.utcnow().date()
-    yesterday = today - timedelta(days=2)
+    yesterday = today - timedelta(days=1)
     last_week_start = today - timedelta(days=7)
     last_month_start = today - timedelta(days=30)
     yesterday_demand = fetch_demand(city, yesterday, today)
     last_week_demand = fetch_demand(city, last_week_start, today)
     last_month_demand = fetch_demand(city, last_month_start, today)
 
-    if not check_role_authorization(Roles.ECOMM.name, request.authorization.token):
+    if not (check_role_authorization(Roles.ECOMM.name, request.authorization.token) or
+            check_role_authorization(Roles.GOVT.name, request.authorization.token)):
         return jsonify({'message': 'Unauthorized Request'}), 403
 
     return jsonify({

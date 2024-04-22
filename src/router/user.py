@@ -93,12 +93,12 @@ def populate_sku_demand():
     email = body.get("user_email")
     items = body.get("items")
     city = body.get("city")
-    survery_id = body.get("survery_id")
     timestamp = body.get("timestamp")
 
     if not check_email_authorization(email, request.authorization.token):
         return jsonify({'message': 'Unauthorized Request'}), 403
 
+    survery_id = uuid.uuid4()
     user_id = get_user_id_by_email(email)
     if not user_id:
         return jsonify({'message': 'User not found'}), 404
@@ -128,6 +128,9 @@ def populate_location_history():
     longitude = body.get("longitude")
     timestamp = body.get("timestamp")
 
+    if not check_email_authorization(email, request.authorization.token):
+        return jsonify({'message': 'Unauthorized Request'}), 403
+
     user_id = get_user_id_by_email(email)
     if not user_id:
         return jsonify({'message': 'User not found'}), 404
@@ -151,6 +154,9 @@ def update_vaccination():
     email = body.get("user_email")
     vaccination_date = body.get("vaccination_date")
 
+    if not check_email_authorization(email, request.authorization.token):
+        return jsonify({'message': 'Unauthorized Request'}), 403
+
     user_id = get_user_id_by_email(email)
     if not user_id:
         return jsonify({'message': 'User not found'}), 404
@@ -173,6 +179,9 @@ def update_infection():
     infected = body.get("infected")
     symptoms = body.get("symptoms")
     timestamp = body.get("timestamp")
+
+    if not check_email_authorization(email, request.authorization.token):
+        return jsonify({'message': 'Unauthorized Request'}), 403
 
     user_id = get_user_id_by_email(email)
     if not user_id:
