@@ -38,7 +38,7 @@ class LocationHistory(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)
     latitude = db.Column(db.Float, nullable=False)
     longitude = db.Column(db.Float, nullable=False)
-    reverse_geo_code_address = db.Column(db.String(100))
+    timestamp = db.Column(db.DateTime, nullable=False)
 
 
 class VaccinationHistory(db.Model):
