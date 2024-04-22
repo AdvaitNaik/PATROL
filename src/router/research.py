@@ -50,19 +50,13 @@ def infection_records():
 
     results = [
         {
-            "History ID": record.history_id,
-            "User UUID": record.uuid,
+            "History Id": record.history_id,
+            "User Id": record.user_id,
             "Infected": record.infected,
             "Symptoms": record.symptoms,
-            "Timestamp": record.timestamp.isoformat() if record.timestamp else None 
+            "Timestamp": record.timestamp.isoformat() if record.timestamp else None
         }
-        for record in db.session.query(
-            InfectionHistory.history_id,
-            User.uuid,
-            InfectionHistory.infected,
-            InfectionHistory.symptoms,
-            InfectionHistory.timestamp
-        ).join(User, InfectionHistory.user_id == User.user_id).filter(InfectionHistory.infected == True).all()
+        for record in InfectionHistory.query.all()
     ]
 
     return jsonify(results), 200
@@ -70,14 +64,20 @@ def infection_records():
 # ------------------------------ /research/vaccination_history ------------------------------ #
 @research_bp.get('/vaccination_history')
 def vaccination_records():
-    vaccinated_count = fetch_vaccination_record()
 
     if not check_role_authorization(Roles.RES.name, request.authorization.token):
         return jsonify({'message': 'Unauthorized Request'}), 403
 
-    return jsonify({
-        "Total Vaccinated": vaccinated_count
-    }), 200
+    results = [
+        {
+            "Vaccination Id": record.vaccination_id,
+            "User Id": record.user_id,
+            "Vaccination Date": record.vaccination_date.isoformat() if record.vaccination_date else None
+        }
+        for record in VaccinationHistory.query.all()
+    ]
+
+    return jsonify(results), 200
 
 
 # ------------------------------ /research/ecommerce_insights/<city> ------------------------------ #
