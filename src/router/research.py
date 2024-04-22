@@ -46,7 +46,7 @@ def index():
     return response
 
 
-# ------------------------------ /research/infection_history ------------------------------ #
+# ------------------------------ /research/location_history ------------------------------ #
 @research_bp.get('/location_history')
 def location_records():
     if not check_role_authorization(Roles.RES.name, request.authorization.token):
@@ -67,7 +67,7 @@ def location_records():
     # Return the list of dictionaries as JSON
     return jsonify(location_history_dicts),200
 
-
+# ------------------------------ /research/infection_history ------------------------------ #
 @research_bp.get('/infection_history')
 def infection_records():
 
@@ -108,7 +108,7 @@ def vaccination_records():
     # Return the list of dictionaries as JSON
     return jsonify(vaccination_history_dicts),200
 
-
+# ------------------------------ /research/broadcast_history ------------------------------ #
 @research_bp.get('/broadcast_history')
 def broadcast_records():
     if not check_role_authorization(Roles.RES.name, request.authorization.token):
@@ -128,6 +128,7 @@ def broadcast_records():
     # Return the list of dictionaries as JSON
     return jsonify(broadcast_history_dicts),200
 
+# ------------------------------ /research/ecommerce_history ------------------------------ #
 @research_bp.get('/ecommerce_history')
 def ecommerce_records():
     if not check_role_authorization(Roles.RES.name, request.authorization.token):
@@ -151,10 +152,7 @@ def ecommerce_records():
     # Return the list of dictionaries as JSON
     return jsonify(ecommerce_history_dicts),200
 
-
-
-
-# ------------------------------ /research/ecommerce_insights/<city> ------------------------------ #
+# ------------------------------ /research/ecommerce_insights ------------------------------ #
 @research_bp.get('/ecommerce_insights')
 def get_demand():
     today = datetime.utcnow().date()
@@ -162,10 +160,10 @@ def get_demand():
     last_week_start = today - timedelta(days=7)
     last_month_start = today - timedelta(days=30)
 
+    if not check_role_authorization(Roles.RES.name, request.authorization.token):
+        return jsonify({'message': 'Unauthorized Request'}), 403
+    
     demands = fetch_all_cities_demand(yesterday, today, last_week_start, last_month_start)
-
-    # if not check_role_authorization(Roles.RES.name, request.authorization.token):
-    #     return jsonify({'message': 'Unauthorized Request'}), 403
 
     return jsonify(demands), 200
 
