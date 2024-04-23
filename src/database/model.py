@@ -12,6 +12,7 @@ class User(db.Model):
     uuid = db.Column(db.String(100), nullable=False)
     uuid_hash = db.Column(db.String(100), nullable=False)
     role_name = db.Column(db.String(100), nullable=False)
+    fcm_reg_token = db.Column(db.TEXT,nullable=True)
 
     # Relationships
     locations = relationship("LocationHistory", backref="user", lazy='dynamic')

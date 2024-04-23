@@ -1,5 +1,5 @@
 from flask import Blueprint, Response, request, jsonify
-from src.utils.firebase import check_email_authorization, create_user as firebase_create_user
+from src.utils.firebase import check_email_authorization, create_user as firebase_create_user, send_notification_to_device
 from src.database.model import User, SkuDemandSurvey, LocationHistory, VaccinationHistory, InfectionHistory
 from src.database.db import db
 from datetime import datetime
@@ -34,7 +34,8 @@ def index():
 def user():
     body = request.get_json()
     user_email = body.get("user_email")
-
+    # print("/user_info")
+    # print(body)
     if not check_email_authorization(user_email, request.authorization.token):
         return jsonify({'message': 'Unauthorized Request'}), 403
 
@@ -48,9 +49,10 @@ def user():
         "email": user.email,
         "uuid": user.uuid,
         "uuid_hash": user.uuid_hash,
-        "role_name": user.role_name
+        "role_name": user.role_name,
+        "fcm_reg_token": user.fcm_reg_token
     }
-
+    # print(user_data)
     return jsonify(user_data), 200
 
 
@@ -63,7 +65,7 @@ def user_create():
     role_name = body.get("role_name")
     first_name = body.get("first_name"),
     last_name = body.get("last_name")
-
+    # print(body)
     try:
         user_create_status = firebase_create_user(email=email, password=password, fullname=f"{first_name} {last_name}", role_name=role_name)
     except Exception as e:
@@ -94,7 +96,8 @@ def populate_sku_demand():
     items = body.get("items")
     city = body.get("city")
     timestamp = body.get("timestamp")
-
+    # print(body)
+    # print(items)
     if not check_email_authorization(email, request.authorization.token):
         return jsonify({'message': 'Unauthorized Request'}), 403
 
@@ -128,7 +131,8 @@ def populate_location_history():
     latitude = body.get("latitude")
     longitude = body.get("longitude")
     timestamp = body.get("timestamp")
-
+    # print("/populate_location body")
+    # print(body)
     if not check_email_authorization(email, request.authorization.token):
         return jsonify({'message': 'Unauthorized Request'}), 403
 
@@ -175,15 +179,33 @@ def update_vaccination():
 # ------------------------------ /user/update_infection ------------------------------ #
 @user_bp.post('/update_infection')
 def update_infection():
+
     body = request.get_json()
     email = body.get("user_email")
+
+    # if not check_email_authorization(email, request.authorization.token):
+    #     return jsonify({'message': 'Unauthorized Request'}), 403
+
     infected = body.get("infected")
     symptoms = body.get("symptoms")
     timestamp = body.get("timestamp")
+    ble_history = body.get("ble_history")
+    uuid_hash_list = []
+    if len(ble_history)>0:
+        #get the uuidhash and time stamp
+        for history in ble_history:
+            uuid_hash, _ = history.split(",")
+            uuid_hash_list.append(uuid_hash)
+        users = User.query.filter(User.uuid_hash.in_(uuid_hash_list)).all()
+        # print(users)
+        fcm_reg_tokens = [user.fcm_reg_token for user in users if user.fcm_reg_token is not None]
+        # print(fcm_reg_tokens)
+        send_notification_to_device("Exposure Notification","You have been in contact with a person who has been marked infected",fcm_reg_tokens)
 
-    if not check_email_authorization(email, request.authorization.token):
-        return jsonify({'message': 'Unauthorized Request'}), 403
-
+        #get the respective fcm tokens for those hash - make a list
+        #call a batch send notification from firebase.py
+        #print success
+    # print(body)
     user_id = get_user_id_by_email(email)
     if not user_id:
         return jsonify({'message': 'User not found'}), 404
@@ -199,6 +221,25 @@ def update_infection():
 
     return jsonify({"message": "Infection history updated successfully"}), 201
 
+
+@user_bp.put('/update_fcm_reg_token')
+def update_fcm_reg_token():
+    body = request.get_json()
+    user_email = body.get("user_email")
+    fcm_reg_token = body.get("fcm_reg_token")
+
+    # print("/update_fcm_reg_token")
+    # print(body)
+    #
+    # if not check_email_authorization(email, request.authorization.token):
+    #     return jsonify({'message': 'Unauthorized Request'}), 403
+    #
+    user = User.query.filter_by(email=user_email).first()
+    if not user:
+        return jsonify({'message': 'User not found'}), 404
+    user.fcm_reg_token = fcm_reg_token
+    db.session.commit()
+    return jsonify({"message": "fcm_reg_token updated successfully."}), 201
 
 
 # @user_bp.post('/create_user')
