@@ -33,34 +33,39 @@ def index():
     return response
 
 # ------------------------------ /crowd/map/monitor ------------------------------ #
+def get_nearby_locations(latitude, longitude, radius_km):
+    all_locations = LocationHistory.query.all()
+    return [loc for loc in all_locations if haversine(longitude, latitude, loc.longitude, loc.latitude) <= radius_km]
+
+def get_infected_user_ids(user_ids):
+    infected_users = InfectionHistory.query.filter(
+        InfectionHistory.user_id.in_(user_ids),
+        InfectionHistory.infected == True
+    ).with_entities(InfectionHistory.user_id).distinct().all()
+    return {user.user_id for user in infected_users}
+
+def location_details(locations, infected_user_ids):
+    return [{
+        "latitude": loc.latitude,
+        "longitude": loc.longitude,
+        "isInfected": loc.user_id in infected_user_ids
+    } for loc in locations]
+
 @crowd_bp.post('/map/monitor')
 def crowd_monitor_map():
     data = request.get_json()
     latitude = float(data['latitude'])
     longitude = float(data['longitude'])
-
     radius_km = 16.09  # 1 mile in kilometers
 
-    all_locations = LocationHistory.query.all()
-    nearby_locations = [loc for loc in all_locations if haversine(longitude, latitude, loc.longitude, loc.latitude) <= radius_km]
-
+    nearby_locations = get_nearby_locations(latitude, longitude, radius_km)
     unique_user_ids = {loc.user_id for loc in nearby_locations}
-
-    infected_user_ids = InfectionHistory.query.filter(
-        InfectionHistory.user_id.in_(unique_user_ids),
-        InfectionHistory.infected == True
-    ).with_entities(InfectionHistory.user_id).distinct().all()
+    infected_user_ids = get_infected_user_ids(unique_user_ids)
 
     total_number_of_people = len(unique_user_ids)
     total_infected = len(infected_user_ids)
 
-    locations = [{
-        "latitude": loc.latitude,
-        "longitude": loc.longitude,
-        "isInfected": bool(InfectionHistory.query.filter(
-            InfectionHistory.user_id == loc.user_id, 
-            InfectionHistory.infected == True).first())
-    } for loc in nearby_locations]
+    locations = location_details(nearby_locations, infected_user_ids)
 
     return jsonify({
         "totalNumberOfPeople": total_number_of_people,
@@ -68,54 +73,47 @@ def crowd_monitor_map():
         "locations": locations
     }), 200
 
-
 # ------------------------------ /crowd/trend/monitor ------------------------------ #
+def get_time_range(days):
+    today = datetime.utcnow().date()
+    if days < 0:
+        return today + timedelta(days=days-1), today - timedelta(days=1)
+    return today - timedelta(days=2), today - timedelta(days=1)
+
+def fetch_location_data(latitude, longitude, start_time, end_time, radius_km):
+    all_locations = LocationHistory.query.filter(
+        LocationHistory.timestamp >= start_time,
+        LocationHistory.timestamp <= end_time
+    ).all()
+    return [loc for loc in all_locations if haversine(longitude, latitude, loc.longitude, loc.latitude) <= radius_km]
+
 @crowd_bp.post('/trend/monitor')
 def crowd_monitor_trend():
     data = request.get_json()
     latitude = float(data['latitude'])
     longitude = float(data['longitude'])
     days = int(data.get('days', 0))
+    radius_km = 16.09  # 10 miles in kilometers
 
-    radius_km = 16.09  # 10 mile in kilometers
-
-    today = datetime.utcnow().date()
-    if days < 0:
-        start_time = today + timedelta(days=days-1)
-        end_time = today - timedelta(days=1)
-    elif days > 0:
+    if days > 0:
         predicted_visits, predicted_infections = regression_model(latitude, longitude, days)
         return jsonify({
             "totalNumberOfPeople": int(predicted_visits),
             "totalInfected": int(predicted_infections)
         }), 200
-    else:
-        start_time = today - timedelta(days=2)
-        end_time = today - timedelta(days=1)
 
-    all_locations = LocationHistory.query.filter(
-        LocationHistory.timestamp >= start_time,
-        LocationHistory.timestamp <= end_time
-    ).all()
-    nearby_locations = [loc for loc in all_locations if haversine(longitude, latitude, loc.longitude, loc.latitude) <= radius_km]
-
+    start_time, end_time = get_time_range(days)
+    nearby_locations = fetch_location_data(latitude, longitude, start_time, end_time, radius_km)
     unique_user_ids = {loc.user_id for loc in nearby_locations}
-
-    infected_user_ids = InfectionHistory.query.filter(
-        InfectionHistory.user_id.in_(unique_user_ids),
-        InfectionHistory.infected == True,
-        InfectionHistory.timestamp >= start_time,
-        InfectionHistory.timestamp <= end_time
-    ).with_entities(InfectionHistory.user_id).distinct().all()
+    infected_user_ids = get_infected_user_ids(unique_user_ids)
 
     total_number_of_people = len(unique_user_ids)
-    total_infected = len(infected_user_ids)  
+    total_infected = len(infected_user_ids)
 
     return jsonify({
         "totalNumberOfPeople": total_number_of_people,
         "totalInfected": total_infected
     }), 200
-
 
 # ------------------------------ HIDDEN ENDPOINT ------------------------------ #
 # ------------------------------ /crowd/location_history/<int:user_id> ------------------------------ #

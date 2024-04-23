@@ -63,8 +63,7 @@ def location_records():
             'timestamp': row.timestamp.strftime("%Y-%m-%d %H:%M:%S")  # Convert datetime to string
         }
         location_history_dicts.append(location_history_dict)
-    #print(infection_history_dicts)
-    # Return the list of dictionaries as JSON
+
     return jsonify(location_history_dicts),200
 
 # ------------------------------ /research/infection_history ------------------------------ #
@@ -85,8 +84,7 @@ def infection_records():
             'timestamp': row.timestamp.strftime("%Y-%m-%d %H:%M:%S")  # Convert datetime to string
         }
         infection_history_dicts.append(infection_history_dict)
-    #print(infection_history_dicts)
-    # Return the list of dictionaries as JSON
+
     return jsonify(infection_history_dicts),200
 
 # ------------------------------ /research/vaccination_history ------------------------------ #
@@ -104,8 +102,7 @@ def vaccination_records():
             'vaccination_date': row.vaccination_date.strftime("%Y-%m-%d %H:%M:%S")  # Convert datetime to string
         }
         vaccination_history_dicts.append(vaccination_history_dict)
-    #print(vaccination_history_dicts)
-    # Return the list of dictionaries as JSON
+
     return jsonify(vaccination_history_dicts),200
 
 # ------------------------------ /research/broadcast_history ------------------------------ #
@@ -124,8 +121,7 @@ def broadcast_records():
             'timestamp': row.timestamp.strftime("%Y-%m-%d %H:%M:%S")  # Convert datetime to string
         }
         broadcast_history_dicts.append(broadcast_history_dict)
-    #print(infection_history_dicts)
-    # Return the list of dictionaries as JSON
+
     return jsonify(broadcast_history_dicts),200
 
 # ------------------------------ /research/ecommerce_history ------------------------------ #
@@ -148,8 +144,7 @@ def ecommerce_records():
             'timestamp': row.timestamp.strftime("%Y-%m-%d %H:%M:%S")  # Convert datetime to string
         }
         ecommerce_history_dicts.append(ecommerce_history_dict)
-    #print(infection_history_dicts)
-    # Return the list of dictionaries as JSON
+
     return jsonify(ecommerce_history_dicts),200
 
 # ------------------------------ /research/ecommerce_insights ------------------------------ #
