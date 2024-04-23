@@ -10,10 +10,9 @@
 # from sklearn.preprocessing import StandardScaler
 # from sklearn.model_selection import train_test_split
 
-import pandas as pd
+
 import numpy as np
 from joblib import load
-import pandas as pd
 from datetime import datetime, timedelta
 import os
 from pathlib import Path
@@ -25,19 +24,13 @@ STATIC_PATH = os.path.join(SOURCE_PATH, "static")
 VISITS_PIPELINE = os.path.join(STATIC_PATH, "visits_pipeline.joblib")
 INFECTIONS_PIPELINE = os.path.join(STATIC_PATH, "infections_pipeline.joblib")
 
-
 def regression_model(latitude_example: float, longitude_example: float, days_ahead: int):
     visits_pipeline = load(VISITS_PIPELINE)
     infections_pipeline = load(INFECTIONS_PIPELINE)
 
     prediction_date = datetime.now() + timedelta(days=days_ahead)
     
-    input_data = pd.DataFrame({
-        'latitude': [latitude_example],
-        'longitude': [longitude_example],
-        'day_of_week': [prediction_date.weekday()],
-        'month': [prediction_date.month]
-    })
+    input_data = np.array([[latitude_example, longitude_example, prediction_date.weekday(), prediction_date.month]])
 
     predicted_visits = visits_pipeline.predict(input_data)
     predicted_infections = infections_pipeline.predict(input_data)
