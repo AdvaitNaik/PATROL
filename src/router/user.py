@@ -94,8 +94,7 @@ def populate_sku_demand():
     items = body.get("items")
     city = body.get("city")
     timestamp = body.get("timestamp")
-    # print(body)
-    # print(items)
+
     if not check_email_authorization(email, request.authorization.token):
         return jsonify({'message': 'Unauthorized Request'}), 403
 
@@ -103,9 +102,8 @@ def populate_sku_demand():
     user_id = get_user_id_by_email(email)
     if not user_id:
         return jsonify({'message': 'User not found'}), 404
-    print("All checks done")
+
     for item in items:
-        #print("Adding "+item);
         item_name = item['itemName']
         quantity = item['quantity']
         demand = SkuDemandSurvey(
@@ -117,7 +115,6 @@ def populate_sku_demand():
             timestamp=datetime.fromisoformat(timestamp)
         )
         db.session.add(demand)
-        #print("Added "+item);
 
     db.session.commit()
     return jsonify({"message": "Saved Successfully"}), 201
@@ -131,8 +128,7 @@ def populate_location_history():
     latitude = body.get("latitude")
     longitude = body.get("longitude")
     timestamp = body.get("timestamp")
-    # print("/populate_location body")
-    # print(body)
+
     if not check_email_authorization(email, request.authorization.token):
         return jsonify({'message': 'Unauthorized Request'}), 403
 

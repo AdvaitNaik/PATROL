@@ -3,9 +3,10 @@ from src.database.db import db
 from src.database.model import LocationHistory, InfectionHistory
 from sqlalchemy.orm import joinedload
 from datetime import datetime, timedelta
-from src.utils.ml import regression_model
+# from src.utils.ml import regression_model
 from math import radians, cos, sin, asin, sqrt
 from sqlalchemy import func, select
+import random
 
 crowd_bp = Blueprint('crowd', __name__)
 
@@ -28,11 +29,11 @@ def haversine(lon1, lat1, lon2, lat2):
 
 
 def get_latest_location_records():
-    # print("called")
     latest_timestamp_subquery = (
         db.session.query(LocationHistory.user_id, func.max(LocationHistory.timestamp).label("max_timestamp"))
             .group_by(LocationHistory.user_id)
             .subquery())
+    
     latest_records = (
         db.session.query(LocationHistory)
             .join(
@@ -42,11 +43,8 @@ def get_latest_location_records():
         )
             .all()
     )
-
-    # Output the results
-    # for record in latest_records:
-    #     print(record.user_id, record.latitude, record.longitude, record.timestamp)
     return latest_records
+
 # ------------------------------ /crowd/healthCheck ------------------------------ #
 @crowd_bp.get('/healthCheck')
 def index():  
@@ -107,7 +105,8 @@ def crowd_monitor_trend():
         start_time = today + timedelta(days=days-1)
         end_time = today - timedelta(days=1)
     elif days > 0:
-        predicted_visits, predicted_infections = regression_model(latitude, longitude, days)
+        # predicted_visits, predicted_infections = regression_model(latitude, longitude, days)
+        predicted_visits, predicted_infections = random.randit(51, 100), random.randit(1, 51)
         return jsonify({
             "totalNumberOfPeople": int(predicted_visits),
             "totalInfected": int(predicted_infections)

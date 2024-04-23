@@ -16,25 +16,6 @@ firebase_admin.initialize_app(cred)
 
 Roles = Enum('Roles', ['GEN', 'GOVT', 'RES', 'ECOMM'])
 
-
-# def create_user(email, password, name, claims):
-#     try:
-#         user = auth.create_user(
-#             email=email,
-#             password=password,
-#             display_name=name
-#         )
-#     except Exception as e:
-#         print(e)
-#         return "Failed to create user"
-
-#     claims_json = {}
-#     for claim in claims:
-#         claims_json[claim] = True
-#     auth.set_custom_user_claims(user.uid, claims_json)
-#     print('Successfully created new user: {0}'.format(user.uid))
-#     return 'Successfully created new user: {0}'.format(user.uid)
-
 # ------------------------------ authorization ------------------------------ #
 def check_email_authorization(email, id_token) -> bool:
     try:

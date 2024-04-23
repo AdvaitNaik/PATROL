@@ -9,7 +9,7 @@ ecommerce_bp = Blueprint('ecommerce', __name__)
 
 # ------------------------------ Util Methods ------------------------------ #
 def fetch_demand(city, start_date, end_date):
-    products = ["sanitizer", "toilet paper", "mask", "disinfectant wipes"]
+    products = ["sanitizer", "tissue paper", "mask", "bread"]
 
     results = db.session.query(
         SkuDemandSurvey.sku_name,
