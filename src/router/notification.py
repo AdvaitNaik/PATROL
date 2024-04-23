@@ -56,7 +56,7 @@ def send_broadcast():
 # ------------------------------ /message/broadcast ------------------------------ #
 @message_bp.get('/broadcasts')
 def get_broadcasts():
-    messages = BroadcastMessage.query.all()
+    messages = BroadcastMessage.query.order_by(BroadcastMessage.timestamp.desc()).all()
     results = [{
         'message_id': message.message_id,
         'title': message.title,
