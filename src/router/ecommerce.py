@@ -34,7 +34,7 @@ def index():
 # ------------------------------ /ecommerce/demand/<city> ------------------------------ #
 @ecommerce_bp.get('/demand/<city>')
 def get_city_demand(city):
-    city = unquote(city)  
+    city = unquote(city)
     today = datetime.utcnow().date()
     yesterday = today - timedelta(days=1)
     last_week_start = today - timedelta(days=7)
