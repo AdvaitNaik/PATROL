@@ -1,9 +1,11 @@
 from flask import Blueprint, Response, jsonify, abort, request
+from src.database.db import db
 from src.database.model import LocationHistory, InfectionHistory
 from sqlalchemy.orm import joinedload
 from datetime import datetime, timedelta
 from src.utils.ml import regression_model
 from math import radians, cos, sin, asin, sqrt
+from sqlalchemy import func, select
 
 crowd_bp = Blueprint('crowd', __name__)
 
@@ -25,6 +27,26 @@ def haversine(lon1, lat1, lon2, lat2):
     return c * r
 
 
+def get_latest_location_records():
+    # print("called")
+    latest_timestamp_subquery = (
+        db.session.query(LocationHistory.user_id, func.max(LocationHistory.timestamp).label("max_timestamp"))
+            .group_by(LocationHistory.user_id)
+            .subquery())
+    latest_records = (
+        db.session.query(LocationHistory)
+            .join(
+            latest_timestamp_subquery,
+            (LocationHistory.user_id == latest_timestamp_subquery.c.user_id)
+            & (LocationHistory.timestamp == latest_timestamp_subquery.c.max_timestamp)
+        )
+            .all()
+    )
+
+    # Output the results
+    # for record in latest_records:
+    #     print(record.user_id, record.latitude, record.longitude, record.timestamp)
+    return latest_records
 # ------------------------------ /crowd/healthCheck ------------------------------ #
 @crowd_bp.get('/healthCheck')
 def index():  
@@ -39,9 +61,10 @@ def crowd_monitor_map():
     latitude = float(data['latitude'])
     longitude = float(data['longitude'])
 
-    radius_km = 16.09  # 1 mile in kilometers
+    radius_km = 16.09  # 10 mile in kilometers
 
-    all_locations = LocationHistory.query.all()
+    all_locations = get_latest_location_records()
+    # all_locations = LocationHistory.query.all()
     nearby_locations = [loc for loc in all_locations if haversine(longitude, latitude, loc.longitude, loc.latitude) <= radius_km]
 
     unique_user_ids = {loc.user_id for loc in nearby_locations}
@@ -58,10 +81,10 @@ def crowd_monitor_map():
         "latitude": loc.latitude,
         "longitude": loc.longitude,
         "isInfected": bool(InfectionHistory.query.filter(
-            InfectionHistory.user_id == loc.user_id, 
+            InfectionHistory.user_id == loc.user_id,
             InfectionHistory.infected == True).first())
     } for loc in nearby_locations]
-
+    # print(locations)
     return jsonify({
         "totalNumberOfPeople": total_number_of_people,
         "totalInfected": total_infected,
