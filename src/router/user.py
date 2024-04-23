@@ -95,6 +95,7 @@ def populate_sku_demand():
     items = body.get("items")
     city = body.get("city")
     timestamp = body.get("timestamp")
+    
     if not check_email_authorization(email, request.authorization.token):
         return jsonify({'message': 'Unauthorized Request'}), 403
 
