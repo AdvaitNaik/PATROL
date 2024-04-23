@@ -1,5 +1,5 @@
 from flask import Blueprint, Response, request, jsonify
-from src.utils.firebase import check_email_authorization, create_user as firebase_create_user
+from src.utils.firebase import check_email_authorization, create_user as firebase_create_user, send_notification_to_device
 from src.database.model import User, SkuDemandSurvey, LocationHistory, VaccinationHistory, InfectionHistory
 from src.database.db import db
 from datetime import datetime
@@ -48,7 +48,8 @@ def user():
         "email": user.email,
         "uuid": user.uuid,
         "uuid_hash": user.uuid_hash,
-        "role_name": user.role_name
+        "role_name": user.role_name,
+        "fcm_reg_token": user.fcm_reg_token
     }
 
     return jsonify(user_data), 200
@@ -94,7 +95,6 @@ def populate_sku_demand():
     items = body.get("items")
     city = body.get("city")
     timestamp = body.get("timestamp")
-
     if not check_email_authorization(email, request.authorization.token):
         return jsonify({'message': 'Unauthorized Request'}), 403
 
@@ -175,14 +175,26 @@ def update_vaccination():
 # ------------------------------ /user/update_infection ------------------------------ #
 @user_bp.post('/update_infection')
 def update_infection():
+
     body = request.get_json()
     email = body.get("user_email")
+
+    # if not check_email_authorization(email, request.authorization.token):
+    #     return jsonify({'message': 'Unauthorized Request'}), 403
+
     infected = body.get("infected")
     symptoms = body.get("symptoms")
     timestamp = body.get("timestamp")
+    ble_history = body.get("ble_history")
 
-    if not check_email_authorization(email, request.authorization.token):
-        return jsonify({'message': 'Unauthorized Request'}), 403
+    uuid_hash_list = []
+    if len(ble_history)>0:
+        for history in ble_history:
+            uuid_hash, _ = history.split(",")
+            uuid_hash_list.append(uuid_hash)
+        users = User.query.filter(User.uuid_hash.in_(uuid_hash_list)).all()
+        fcm_reg_tokens = [user.fcm_reg_token for user in users if user.fcm_reg_token is not None]
+        send_notification_to_device("Exposure Notification", "You have been in contact with a person who has been marked infected", fcm_reg_tokens)
 
     user_id = get_user_id_by_email(email)
     if not user_id:
@@ -200,14 +212,21 @@ def update_infection():
     return jsonify({"message": "Infection history updated successfully"}), 201
 
 
+@user_bp.put('/update_fcm_reg_token')
+def update_fcm_reg_token():
+    body = request.get_json()
+    user_email = body.get("user_email")
+    fcm_reg_token = body.get("fcm_reg_token")
 
-# @user_bp.post('/create_user')
-# def create_new_user():
-#     body = request.get_json()
-#     message = create_user(body.get("email"), body.get("password"), body.get("fullname"), body.get("claims"))
-#     response = Response(message)
-#     response.status_code = 200
-#     response.headers.add("Access-Control-Allow-Origin", "*")
-#     response.headers.add('Access-Control-Allow-Headers', "*")
-#     response.headers.add('Access-Control-Allow-Methods', "*")
-#     return response
+    # if not check_email_authorization(email, request.authorization.token):
+    #     return jsonify({'message': 'Unauthorized Request'}), 403
+
+    user = User.query.filter_by(email=user_email).first()
+    if not user:
+        return jsonify({'message': 'User not found'}), 404
+    
+    user.fcm_reg_token = fcm_reg_token
+    db.session.commit()
+
+    return jsonify({"message": "fcm_reg_token updated successfully."}), 201
+

@@ -90,7 +90,33 @@ def send_notification(title: str, body: str, topic: str):
         return None, "Failed to send notification"
 
 
+# ------------------------------ notification ------------------------------ #
+def send_notification_to_device(title: str, body: str, reg_ids: list):
+    logger.info("send_notification_to_device")
+    message = messaging.MulticastMessage(
+        notification=messaging.Notification(
+            title=title,
+            body=body,
+        ),
+        android=messaging.AndroidConfig(
+            ttl=datetime.timedelta(seconds=3600),
+            priority='normal',
+            notification=messaging.AndroidNotification(
+                icon='stock_ticker_update',
+                color='#f45342'
+            ),
+        ),
+        apns=messaging.APNSConfig(
+            payload=messaging.APNSPayload(
+                aps=messaging.Aps(badge=42),
+            ),
+        ),
+        tokens=reg_ids
+    )
 
-# create_user("trino.nandi@gmail.com", "Trinanjan@00", "Trinanjan")
-# send_notification("Trinanjan", "Hey it's me broadcasting to all devices registered", "broadcast")
-# send_notification("Trinanjan", "Exposure notification!!!", "exposure")
+    try:
+        response = messaging.send_multicast(message)
+        logger.info(response)
+    except Exception as e:
+        error_message = "Failed to send notification: " + str(e)
+        logger.info(error_message)
