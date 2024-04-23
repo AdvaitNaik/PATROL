@@ -3,7 +3,7 @@ from src.database.db import db
 from src.database.model import LocationHistory, InfectionHistory
 from sqlalchemy.orm import joinedload
 from datetime import datetime, timedelta
-# from src.utils.ml import regression_model
+from src.utils.ml import regression_model
 from math import radians, cos, sin, asin, sqrt
 from sqlalchemy import func, select
 import random
@@ -105,8 +105,7 @@ def crowd_monitor_trend():
         start_time = today + timedelta(days=days-1)
         end_time = today - timedelta(days=1)
     elif days > 0:
-        # predicted_visits, predicted_infections = regression_model(latitude, longitude, days)
-        predicted_visits, predicted_infections = random.randit(51, 100), random.randit(1, 51)
+        predicted_visits, predicted_infections = regression_model(latitude, longitude, days)
         return jsonify({
             "totalNumberOfPeople": int(predicted_visits),
             "totalInfected": int(predicted_infections)
