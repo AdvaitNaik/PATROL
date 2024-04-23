@@ -1,7 +1,8 @@
 from flask import Blueprint, Response, request, jsonify
-from src.firebase import create_user as firebase_create_user
-from src.database.model import User
+from src.utils.firebase import check_email_authorization, create_user as firebase_create_user
+from src.database.model import User, SkuDemandSurvey, LocationHistory, VaccinationHistory, InfectionHistory
 from src.database.db import db
+from datetime import datetime
 import uuid
 import hashlib
 
@@ -15,6 +16,10 @@ def create_uuid_hash(uuid: str):
     hashed_uuid = sha1.hexdigest()
     return hashed_uuid
 
+def get_user_id_by_email(email):
+    user = User.query.filter_by(email=email).first()
+    return user.user_id if user else None
+
 
 # ------------------------------ /user/healthCheck ------------------------------ #
 @user_bp.get('/healthCheck')
@@ -25,10 +30,14 @@ def index():
 
 
 # ------------------------------ /user/<int:user_id> ------------------------------ #
-@user_bp.get('/info')
+@user_bp.post('/info')
 def user():
     body = request.get_json()
     user_email = body.get("user_email")
+
+    if not check_email_authorization(user_email, request.authorization.token):
+        return jsonify({'message': 'Unauthorized Request'}), 403
+
     user = User.query.filter_by(email=user_email).first()
     if not user:
         return jsonify({'message': 'User not found'}), 404
@@ -41,6 +50,7 @@ def user():
         "uuid_hash": user.uuid_hash,
         "role_name": user.role_name
     }
+
     return jsonify(user_data), 200
 
 
@@ -51,11 +61,11 @@ def user_create():
     email = body.get("email")
     password = body.get("password")
     role_name = body.get("role_name")
-    first_name=body.get("first_name"),
-    last_name=body.get("last_name")
+    first_name = body.get("first_name"),
+    last_name = body.get("last_name")
 
     try:
-        user_create_status = firebase_create_user(email=email, password=password, fullname=f"{first_name} {last_name}",role_name=role_name)
+        user_create_status = firebase_create_user(email=email, password=password, fullname=f"{first_name} {last_name}", role_name=role_name)
     except Exception as e:
         return jsonify({"Error": str(e)}), 400
 
@@ -73,7 +83,121 @@ def user_create():
         db.session.add(new_user)
         db.session.commit()
 
-    return jsonify({"message": "User created successfully", "user_uuid": new_user.uuid}), 201
+    return jsonify({"message": "User created successfully", "user_uuid": body}), 201
+
+
+# ------------------------------ /user/request_items ------------------------------ #
+@user_bp.post('/request_items')
+def populate_sku_demand():
+    body = request.get_json()
+    email = body.get("user_email")
+    items = body.get("items")
+    city = body.get("city")
+    timestamp = body.get("timestamp")
+
+    if not check_email_authorization(email, request.authorization.token):
+        return jsonify({'message': 'Unauthorized Request'}), 403
+
+    survey_id = uuid.uuid4()
+    user_id = get_user_id_by_email(email)
+    if not user_id:
+        return jsonify({'message': 'User not found'}), 404
+
+    for item in items:
+        item_name = item['itemName']
+        quantity = item['quantity']
+        demand = SkuDemandSurvey(
+            user_id=user_id,
+            survey_id=survey_id,
+            city=city.lower(),
+            sku_name=item_name.lower(),
+            quantity=quantity,
+            timestamp=datetime.fromisoformat(timestamp)
+        )
+        db.session.add(demand)
+
+    db.session.commit()
+    return jsonify({"message": "Saved Successfully"}), 201
+
+
+# ------------------------------ /user/populate_location ------------------------------ #
+@user_bp.post('/populate_location')
+def populate_location_history():
+    body = request.get_json()
+    email = body.get("email")
+    latitude = body.get("latitude")
+    longitude = body.get("longitude")
+    timestamp = body.get("timestamp")
+
+    if not check_email_authorization(email, request.authorization.token):
+        return jsonify({'message': 'Unauthorized Request'}), 403
+
+    user_id = get_user_id_by_email(email)
+    if not user_id:
+        return jsonify({'message': 'User not found'}), 404
+
+    location = LocationHistory(
+        user_id=user_id,
+        latitude=latitude,
+        longitude=longitude,
+        timestamp = datetime.fromisoformat(timestamp)
+    )
+    db.session.add(location)
+    db.session.commit()
+
+    return jsonify({"message": "Location history added successfully"}), 201
+
+
+# ------------------------------ /user/update_vaccination ------------------------------ #
+@user_bp.post('/update_vaccination')
+def update_vaccination():
+    body = request.get_json()
+    email = body.get("user_email")
+    vaccination_date = body.get("vaccination_date")
+
+    if not check_email_authorization(email, request.authorization.token):
+        return jsonify({'message': 'Unauthorized Request'}), 403
+
+    user_id = get_user_id_by_email(email)
+    if not user_id:
+        return jsonify({'message': 'User not found'}), 404
+
+    vaccination = VaccinationHistory(
+        user_id=user_id,
+        vaccination_date=datetime.strptime(vaccination_date, '%Y-%m-%d').date()
+    )
+    db.session.add(vaccination)
+    db.session.commit()
+
+    return jsonify({"message": "Vaccination history updated successfully"}), 201
+
+
+# ------------------------------ /user/update_infection ------------------------------ #
+@user_bp.post('/update_infection')
+def update_infection():
+    body = request.get_json()
+    email = body.get("user_email")
+    infected = body.get("infected")
+    symptoms = body.get("symptoms")
+    timestamp = body.get("timestamp")
+
+    if not check_email_authorization(email, request.authorization.token):
+        return jsonify({'message': 'Unauthorized Request'}), 403
+
+    user_id = get_user_id_by_email(email)
+    if not user_id:
+        return jsonify({'message': 'User not found'}), 404
+
+    new_infection = InfectionHistory(
+        user_id=user_id,
+        infected=infected,
+        symptoms=symptoms.lower(),
+        timestamp=datetime.fromisoformat(timestamp)
+    )
+    db.session.add(new_infection)
+    db.session.commit()
+
+    return jsonify({"message": "Infection history updated successfully"}), 201
 
 
 

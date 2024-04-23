@@ -8,13 +8,12 @@ class User(db.Model):
     user_id = db.Column(db.Integer, primary_key=True)
     first_name = db.Column(db.String(100), nullable=False)
     last_name = db.Column(db.String(100), nullable=False)
-    email = db.Column(db.String(100), nullable=False)
+    email = db.Column(db.String(100), nullable=False, unique=True)
     uuid = db.Column(db.String(100), nullable=False)
     uuid_hash = db.Column(db.String(100), nullable=False)
     role_name = db.Column(db.String(100), nullable=False)
 
     # Relationships
-    messages = relationship("BroadcastMessage", backref="user", lazy='dynamic')
     locations = relationship("LocationHistory", backref="user", lazy='dynamic')
     vaccination_records = relationship("VaccinationHistory", backref="user", lazy='dynamic')
     infection_records = relationship("InfectionHistory", backref="user", lazy='dynamic')
@@ -28,7 +27,6 @@ class BroadcastMessage(db.Model):
     title = db.Column(db.String(100), nullable=False)
     message = db.Column(db.String(100), nullable=False)
     timestamp = db.Column(db.DateTime, nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)
 
 
 class LocationHistory(db.Model):
@@ -38,7 +36,7 @@ class LocationHistory(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)
     latitude = db.Column(db.Float, nullable=False)
     longitude = db.Column(db.Float, nullable=False)
-    reverse_geo_code_address = db.Column(db.String(100))
+    timestamp = db.Column(db.DateTime, nullable=False)
 
 
 class VaccinationHistory(db.Model):
@@ -63,9 +61,10 @@ class SkuDemandSurvey(db.Model):
     __tablename__ = 'sku_demand_survey'
 
     demand_id = db.Column(db.Integer, primary_key=True)
-    survey_id = db.Column(db.Integer, nullable=False)
+    survey_id = db.Column(db.String(100), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)
     city = db.Column(db.String(100), nullable=False)
-    ranking = db.Column(db.Integer)
+    sku_name = db.Column(db.String(100), nullable=False)
     quantity = db.Column(db.Integer)
+    timestamp = db.Column(db.DateTime, nullable=False)
 
