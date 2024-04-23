@@ -89,8 +89,10 @@ def send_notification(title: str, body: str, topic: str):
         logger.error(error_message)
         return None, "Failed to send notification"
 
+
+# ------------------------------ notification ------------------------------ #
 def send_notification_to_device(title: str, body: str, reg_ids: list):
-    logger.info(">> send_notification_to_device")
+    logger.info("send_notification_to_device")
     message = messaging.MulticastMessage(
         notification=messaging.Notification(
             title=title,
@@ -118,6 +120,3 @@ def send_notification_to_device(title: str, body: str, reg_ids: list):
     except Exception as e:
         error_message = "Failed to send notification: " + str(e)
         logger.info(error_message)
-# create_user("trino.nandi@gmail.com", "Trinanjan@00", "Trinanjan")
-# send_notification("Trinanjan", "Hey it's me broadcasting to all devices registered", "broadcast")
-# send_notification("Trinanjan", "Exposure notification!!!", "exposure")
