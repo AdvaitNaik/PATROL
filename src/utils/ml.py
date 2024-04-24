@@ -12,89 +12,89 @@ STATIC_PATH = os.path.join(SOURCE_PATH, "static")
 VISITS_PIPELINE = os.path.join(STATIC_PATH, 'visits_model.npy')
 INFECTIONS_PIPELINE = os.path.join(STATIC_PATH, 'infections_model.npy')
 
-# class RandomForestRegressorCustom:
-#    def __init__(self, n_estimators=100):
-#        self.n_estimators = n_estimators
-#        self.trees = []
+class RandomForestRegressorCustom:
+   def __init__(self, n_estimators=100):
+       self.n_estimators = n_estimators
+       self.trees = []
 
-#    def fit(self, X, y):
-#        for _ in range(self.n_estimators):
-#            indices = np.random.choice(X.shape[0], size=X.shape[0], replace=True)
-#            X_subset, y_subset = X[indices], y[indices]
-#            tree = DecisionTreeRegressorCustom()
-#            tree.fit(X_subset, y_subset)
-#            self.trees.append(tree)
+   def fit(self, X, y):
+       for _ in range(self.n_estimators):
+           indices = np.random.choice(X.shape[0], size=X.shape[0], replace=True)
+           X_subset, y_subset = X[indices], y[indices]
+           tree = DecisionTreeRegressorCustom()
+           tree.fit(X_subset, y_subset)
+           self.trees.append(tree)
 
-#    def predict(self, X):
-#        predictions = np.zeros(X.shape[0])
-#        for tree in self.trees:
-#            predictions += tree.predict(X)
-#        return predictions / self.n_estimators
+   def predict(self, X):
+       predictions = np.zeros(X.shape[0])
+       for tree in self.trees:
+           predictions += tree.predict(X)
+       return predictions / self.n_estimators
 
 
-# class DecisionTreeRegressorCustom:
-#    def __init__(self, max_depth=None):
-#        self.max_depth = max_depth
+class DecisionTreeRegressorCustom:
+   def __init__(self, max_depth=None):
+       self.max_depth = max_depth
 
-#    def fit(self, X, y):
-#        self.tree = self._build_tree(X, y, depth=0)
+   def fit(self, X, y):
+       self.tree = self._build_tree(X, y, depth=0)
 
-#    def _build_tree(self, X, y, depth):
-#        if len(set(y)) == 1 or depth == self.max_depth:
-#            return np.mean(y)
+   def _build_tree(self, X, y, depth):
+       if len(set(y)) == 1 or depth == self.max_depth:
+           return np.mean(y)
 
-#        feature_index, split_value = self._find_best_split(X, y)
+       feature_index, split_value = self._find_best_split(X, y)
 
-#        if feature_index is None:
-#            return np.mean(y)
+       if feature_index is None:
+           return np.mean(y)
 
-#        left_indices = X[:, feature_index] <= split_value
-#        right_indices = ~left_indices
+       left_indices = X[:, feature_index] <= split_value
+       right_indices = ~left_indices
 
-#        left_tree = self._build_tree(X[left_indices], y[left_indices], depth + 1)
-#        right_tree = self._build_tree(X[right_indices], y[right_indices], depth + 1)
+       left_tree = self._build_tree(X[left_indices], y[left_indices], depth + 1)
+       right_tree = self._build_tree(X[right_indices], y[right_indices], depth + 1)
 
-#        return {'feature_index': feature_index, 'split_value': split_value,
-#                'left_tree': left_tree, 'right_tree': right_tree}
+       return {'feature_index': feature_index, 'split_value': split_value,
+               'left_tree': left_tree, 'right_tree': right_tree}
 
-#    def _find_best_split(self, X, y):
-#        best_score = float('inf')
-#        best_feature_index = None
-#        best_split_value = None
+   def _find_best_split(self, X, y):
+       best_score = float('inf')
+       best_feature_index = None
+       best_split_value = None
 
-#        for feature_index in range(X.shape[1]):
-#            unique_values = np.unique(X[:, feature_index])
-#            for value in unique_values:
-#                left_indices = X[:, feature_index] <= value
-#                right_indices = ~left_indices
+       for feature_index in range(X.shape[1]):
+           unique_values = np.unique(X[:, feature_index])
+           for value in unique_values:
+               left_indices = X[:, feature_index] <= value
+               right_indices = ~left_indices
 
-#                if len(y[left_indices]) == 0 or len(y[right_indices]) == 0:
-#                    continue
+               if len(y[left_indices]) == 0 or len(y[right_indices]) == 0:
+                   continue
 
-#                mse = self._calculate_mse(y[left_indices], y[right_indices])
-#                if mse < best_score:
-#                    best_score = mse
-#                    best_feature_index = feature_index
-#                    best_split_value = value
+               mse = self._calculate_mse(y[left_indices], y[right_indices])
+               if mse < best_score:
+                   best_score = mse
+                   best_feature_index = feature_index
+                   best_split_value = value
 
-#        return best_feature_index, best_split_value
+       return best_feature_index, best_split_value
 
-#    def _calculate_mse(self, left_y, right_y):
-#        left_mean = np.mean(left_y)
-#        right_mean = np.mean(right_y)
-#        total_samples = len(left_y) + len(right_y)
-#        return (np.sum((left_y - left_mean) ** 2) + np.sum((right_y - right_mean) ** 2)) / total_samples
+   def _calculate_mse(self, left_y, right_y):
+       left_mean = np.mean(left_y)
+       right_mean = np.mean(right_y)
+       total_samples = len(left_y) + len(right_y)
+       return (np.sum((left_y - left_mean) ** 2) + np.sum((right_y - right_mean) ** 2)) / total_samples
 
-#    def predict(self, X):
-#        return np.array([self._predict_tree(x, self.tree) for x in X])
+   def predict(self, X):
+       return np.array([self._predict_tree(x, self.tree) for x in X])
 
-#    def _predict_tree(self, x, tree):
-#        if isinstance(tree, (float, np.float64)):
-#            return tree
-#        if x[tree['feature_index']] <= tree['split_value']:
-#            return self._predict_tree(x, tree['left_tree'])
-#        else:
-#            return self._predict_tree(x, tree['right_tree'])
+   def _predict_tree(self, x, tree):
+       if isinstance(tree, (float, np.float64)):
+           return tree
+       if x[tree['feature_index']] <= tree['split_value']:
+           return self._predict_tree(x, tree['left_tree'])
+       else:
+           return self._predict_tree(x, tree['right_tree'])
 
 # def fetch_and_prepare_data():
 #     query = db.session.query(
