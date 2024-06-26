@@ -6,6 +6,8 @@
 
 PATROL is an innovative Android application designed to address the challenges posed during a pandemic, especially with crowd monitoring and health management in various locations. With a focus on user empowerment and data-driven decision-making, PATROL enables users to monitor crowd density, track health statuses, ensure effective communication channels, and facilitate resource management. Leveraging advanced technologies like Bluetooth Low Energy (BLE), location services, and firebase messaging service, the app provides real-time information to the general public,  government officials, e-commerce vendors, developers, and researchers ensuring timely response to health threats, effective communication during emergencies and extending the data to implement further solutions. 
 
+## PATROL Frontend
+
 View - [View Android Code](https://github.com/nil-mohanty/PATROLApp)
 
 ## PATROL Server
